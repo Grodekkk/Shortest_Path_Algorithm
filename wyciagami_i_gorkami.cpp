@@ -38,12 +38,12 @@ HillField** createHillArray(int width, int height)
 
     for (int i = 0; i < height; i++)
     {
-        map[i] = new HillField[width];        // alokacja kolumn dla ka¿dego wiersza
+        map[i] = new HillField[width];        // alokacja kolumn dla kaÅ¼dego wiersza
 
         for (int j = 0; j < width; j++)
         {
-            cin >> map[i][j].hillHeight;      // wczytaj wysokoœæ pola
-            map[i][j].hillShortestPath = -1;  // ustaw "nieskoñczony" koszt
+            cin >> map[i][j].hillHeight;      // wczytaj wysokoÅ›Ä‡ pola
+            map[i][j].hillShortestPath = -1;  // ustaw "nieskoÅ„czony" koszt
             map[i][j].visited = false;        // jeszcze nieodwiedzone
         }
     }
@@ -51,7 +51,7 @@ HillField** createHillArray(int width, int height)
     return map;
 }
 
-// Zwalnianie pamiêci tablicy dynamicznej
+// Zwalnianie pamiÄ™ci tablicy dynamicznej
 void deleteHillArray(HillField** map, int length)
 {
     for (int i = 0; i < length; i++)
@@ -225,9 +225,33 @@ int runDijkstraAlgorithm(MetaInfo* data, HillField** map)
         }
 
         //=========================== CHANGE TO SUCCESOR ============================================================
-        currentX = successorX;
-        currentY = succesorY;
-        map[currentY][currentX].visited = true;
+
+        //if we dont find successor witin the neighbours, look for some on the map
+        if (successorX == -1 && succesorY == -1)
+        {
+            for (int i = 0; i < data->height; i++)
+            {
+                for (int j = 0; j < data->width; j++)
+                {
+                    if (map[i][j].visited == false)
+                    {
+                        if (succesorShortest == -1 || (map[i][j].hillShortestPath <= succesorShortest && map[i][j].hillShortestPath != -1))
+                        {
+                            successorX = j;
+                            succesorY = i;
+                            succesorShortest = map[i][j].hillShortestPath;
+                        }
+                    }
+                }
+            }
+        }
+        
+        //cout << "ruch na: (" << successorX << "," << succesorY << ")" << endl;
+            currentX = successorX;
+            currentY = succesorY;
+            map[currentY][currentX].visited = true;
+        
+        
     }
 }
 
