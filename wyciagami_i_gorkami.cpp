@@ -448,6 +448,10 @@ int runDijkstraAlgorithm(MetaInfo* data, HillField** map, MinHeap* m)
             if (temp.x < 0 || temp.y < 0 || temp.x >= data->width || temp.y >= data->height)
                 continue; // śmieciowy rekord – pomiń
 
+            //dodane test 15
+            if (map[temp.y][temp.x].hillShortestPath < temp.shortest)
+                continue;
+
             if (map[temp.y][temp.x].visited == false)
             {
                 break;
@@ -522,6 +526,9 @@ int main()
     //=================================== vvvv MAIN PROGRAM vvvvv ===========================================================
 
 
+    //dodane test 15
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
     
     MetaInfo data;
