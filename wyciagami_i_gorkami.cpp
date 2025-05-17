@@ -52,7 +52,7 @@ void initializeHeap(MinHeap* m, MetaInfo* data)
     //create new tree represented by array of N * M size
     int width = data->width;
     int height = data->height;
-    int size = width * height * 2;
+    int size = width * height;
     //tworzymy tablice wskaznikow na struktury Node wielkosci M * N
     m->tree = new Node * [size];
 
