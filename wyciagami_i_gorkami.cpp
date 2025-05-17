@@ -1,6 +1,4 @@
 #include <iostream>
-#include <climits> // dla INT_MAX
-
 
 using namespace std;
 
@@ -47,7 +45,7 @@ struct Node
 
 struct MinHeap
 {
-    Node** tree;
+    Node* tree;
     int heapsize;
 };
 
@@ -59,19 +57,17 @@ void initializeHeap(MinHeap* m, MetaInfo* data)
     int height = data->height;
     int size = width * height;                                      //this might be too small width * height * 2
 
-    //we make pointer array of node structure
-    m->tree = new Node * [size];
+    //make array of node structure
+    m->tree = new Node[size];
 
     //fill the aray with "empty" data
     for (int i = 0; i < size; i++)
     {
-        //create empty node inside
-        m->tree[i] = new Node;
-
+        
         //create it's default values
-        m->tree[i]->shortest = -1;
-        m->tree[i]->x = -1;
-        m->tree[i]->y = -1;
+        m->tree[i].shortest = -1;
+        m->tree[i].x = -1;
+        m->tree[i].y = -1;
     }
 
     m->heapsize = 0;
@@ -86,9 +82,9 @@ void insertHeap(MinHeap* m, int value, int x, int y)
     int i = m->heapsize;
 
     //write in shortest path, and coordinates of given point
-    m->tree[i]->shortest = value;
-    m->tree[i]->x = x;
-    m->tree[i]->y = y;
+    m->tree[i].shortest = value;
+    m->tree[i].x = x;
+    m->tree[i].y = y;
 
     //increment heapsize
     m->heapsize++;
@@ -100,10 +96,10 @@ void insertHeap(MinHeap* m, int value, int x, int y)
         int parent = (i - 1) / 2;
 
         //if parrent is bigger -> switch
-        if (m->tree[i]->shortest < m->tree[parent]->shortest)
+        if (m->tree[i].shortest < m->tree[parent].shortest)
         {
             //copy whole node as pointer
-            Node* parrentData = m->tree[parent];
+            Node parrentData = m->tree[parent];
 
             //switch pointers
             m->tree[parent] = m->tree[i];
@@ -124,21 +120,21 @@ Node removeHeap(MinHeap* m)
 {
     //step 1: deep copy of the top of a heap
     Node result;
-    result.shortest = m->tree[0]->shortest;
-    result.x = m->tree[0]->x;
-    result.y = m->tree[0]->y;
+    result.shortest = m->tree[0].shortest;
+    result.x = m->tree[0].x;
+    result.y = m->tree[0].y;
 
 
     //step 2: replace top and bottom of the heap
-    m->tree[0]->shortest = m->tree[m->heapsize - 1]->shortest;
-    m->tree[0]->x = m->tree[m->heapsize - 1]->x;
-    m->tree[0]->y = m->tree[m->heapsize - 1]->y;
+    m->tree[0].shortest = m->tree[m->heapsize - 1].shortest;
+    m->tree[0].x = m->tree[m->heapsize - 1].x;
+    m->tree[0].y = m->tree[m->heapsize - 1].y;
 
 
     //step 3: remove last node from tree, (clean values), decrement heapSize
-    m->tree[m->heapsize - 1]->shortest = -1;
-    m->tree[m->heapsize - 1]->x = -1;
-    m->tree[m->heapsize - 1]->y = -1;
+    m->tree[m->heapsize - 1].shortest = -1;
+    m->tree[m->heapsize - 1].x = -1;
+    m->tree[m->heapsize - 1].y = -1;
     m->heapsize--;
 
     //step 4 compare topNode with children, until children are bigger
@@ -153,27 +149,27 @@ Node removeHeap(MinHeap* m)
 
         
         //values of shortest distances of "parrent" and "children"
-        int currentNode = m->tree[i]->shortest;
-        int leftChildNode = m->tree[leftChild]->shortest;
-        int rightChildNode = m->tree[rightChild]->shortest;
+        int currentNode = m->tree[i].shortest;
+        int leftChildNode = m->tree[leftChild].shortest;
+        int rightChildNode = m->tree[rightChild].shortest;
 
         int smallest = parrent;
 
         //check if left child is smaller than parrent, and if it exist
-        if (leftChild < m->heapsize && m->tree[leftChild]->shortest < m->tree[smallest]->shortest)
+        if (leftChild < m->heapsize && m->tree[leftChild].shortest < m->tree[smallest].shortest)
         {
             smallest = leftChild;
         }
 
         //check if left child is smaller than parrent, and leftchild, and if it exist
-        if (rightChild < m->heapsize && m->tree[rightChild]->shortest < m->tree[smallest]->shortest)
+        if (rightChild < m->heapsize && m->tree[rightChild].shortest < m->tree[smallest].shortest)
         {
             smallest = rightChild;
         }
 
 
         //save parrentData for switching
-        Node* parentData = m->tree[i];
+        Node parentData = m->tree[i];
 
         //end condition
         if (smallest == i)
@@ -190,14 +186,11 @@ Node removeHeap(MinHeap* m)
 }
 
 //====================   DELETE HEAP ===============================================
-void deleteHeap(MinHeap* m, int totalSize)
+void deleteHeap(MinHeap* m)
 {
-    for (int i = 0; i < totalSize; i++)
-    {
-        delete m->tree[i];
-    }
-    delete[] m->tree;
+    delete[] m->tree;   // wystarczy jedna operacja
 }
+
 
 //==========================================================================================================================
 //=============================   BAZOWE DZIALANIE ALGORYTMU DLA JEDNEGO ZBIORU DANYCH =====================================
@@ -438,15 +431,6 @@ int runDijkstraAlgorithm(MetaInfo* data, HillField** map, MinHeap* m, SkiLift* l
 }
 
 
-void printHeap(MinHeap* m)
-{
-    cout << "[DEBUG HEAP] ";
-    for (int i = 0; i < m->heapsize; i++)
-    {
-        cout << m->tree[i]->shortest << " ";
-    }
-    cout << endl;
-}
 
 int main()
 {
