@@ -8,6 +8,14 @@ using namespace std;
 #define DOWN 1
 #define INFINITY -1
 
+struct SkiLift
+{
+    int startX, startY;
+    int endX, endY;
+    int travelTime;
+    int runsEvery;
+};
+
 struct MetaInfo
 {
     int width, height, startX, startY, destinationX, destinationY, skiLiftCount;
@@ -222,6 +230,21 @@ void readMetaInfo(MetaInfo* data)
     cin >> data->width >> data->height >> data->startX >> data->startY >> data->destinationX >> data->destinationY >> data->skiLiftCount;
 }
 
+SkiLift* readSkiLifts(int count)
+{
+    //allocating array of Skilift data structure
+    SkiLift* liftList = new SkiLift[count];
+
+    int counter = count;
+
+    for (int i = 0; i < count; i++)
+    {
+        cin >> liftList[i].startX >> liftList[i].startY >> liftList[i].endX >> liftList[i].endY >> liftList[i].travelTime >> liftList[i].runsEvery;
+    }
+
+    return liftList;
+}
+
 //create array of HillField data structures, fill it accordingly
 HillField** createHillArray(int width, int height)
 {
@@ -251,7 +274,7 @@ void deleteHillArray(HillField** map, int length)
 }
 
 //main function of Dijkstra algorithm
-int runDijkstraAlgorithm(MetaInfo* data, HillField** map, MinHeap* m)
+int runDijkstraAlgorithm(MetaInfo* data, HillField** map, MinHeap* m, SkiLift* liftList)
 {
     //get starting "node" and destination node
     int currentX = data->startX;
@@ -270,6 +293,47 @@ int runDijkstraAlgorithm(MetaInfo* data, HillField** map, MinHeap* m)
         if (currentX == destX && currentY == destY)
         {
             return map[currentY][currentX].hillShortestPath;
+        }
+
+        //==== IF LIFTLIST != NULLPTR CHECK IF THIS FIELD HAS LIFTS, RELAX ACCORDINGLY ===============
+        //separate function
+        if (liftList != nullptr)
+        {
+            for (int i = 0; i < data->skiLiftCount; i++)
+            {
+                if (currentX == liftList[i].startX && currentY == liftList[i].startY)
+                {
+                    //check how many minutes do we have to wait for the lift
+                    //cout << "runsEvery: " << liftList[i].runsEvery << std::endl;
+                    //cout << "shortest: " << map[currentY][currentX].hillShortestPath << std::endl;
+                    int moduloTimeLeft = map[currentY][currentX].hillShortestPath % liftList[i].runsEvery;
+                    int waitingTime = 0;
+                    if (moduloTimeLeft != 0)
+                    {
+                        waitingTime = liftList[i].runsEvery - moduloTimeLeft;
+                    }
+
+                    //"relax" the destination
+                    int destinationPath = map[currentY][currentX].hillShortestPath + waitingTime + liftList[i].travelTime;
+                    if (map[liftList[i].endY][liftList[i].endX].visited == false)
+                    {
+                        if (map[liftList[i].endY][liftList[i].endX].hillShortestPath == INFINITY || map[liftList[i].endY][liftList[i].endX].hillShortestPath > destinationPath)
+                        {
+                            map[liftList[i].endY][liftList[i].endX].hillShortestPath = destinationPath;
+
+                            //ZAROWNO tu jak i w innych mozna chyba day po prostu ten "destinationpath"
+                            int shortest = map[liftList[i].endY][liftList[i].endX].hillShortestPath;
+                            int x = liftList[i].endX;
+                            int y = liftList[i].endY;
+                            insertHeap(m, shortest, x, y);
+                        }
+                    }
+
+
+
+                }
+                
+            }
         }
 
         //========================== LEFT SIDE RELAXATION===========================================================
@@ -535,13 +599,21 @@ int main()
     MinHeap priorityList;
 
     readMetaInfo(&data);
+
+    //if there is no skiLifts, return nullptr
+    SkiLift* liftList = nullptr;
+    //add SkiLifts if data.skiLiftCount > 0
+    if (data.skiLiftCount > 0)
+    {
+        liftList = readSkiLifts(data.skiLiftCount);
+    }
+    
     initializeHeap(&priorityList, &data);
 
 
     HillField** hillMap = createHillArray(data.width, data.height);
 
-    // ...tutaj dalsza logika algorytmu Dijkstry
-    int ShortestPath = runDijkstraAlgorithm(&data, hillMap, &priorityList);
+    int ShortestPath = runDijkstraAlgorithm(&data, hillMap, &priorityList, liftList);
 
     cout << ShortestPath;
 
